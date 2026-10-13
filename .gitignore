@@ -1,0 +1,9 @@
+node_modules
+dist
+.env
+.env.local
+*.log
+.DS_Store
+_cli_upload_log.txt
+_upload_info.json
+soft-copyright/

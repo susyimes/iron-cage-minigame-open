@@ -1,0 +1,34 @@
+import assert from "node:assert/strict";
+import { Input } from "../client/src/input.ts";
+import { bindTouches } from "../client/src/minigame/touch.ts";
+import type { Game } from "../client/src/game/game.ts";
+import type { MiniUi } from "../client/src/minigame/ui.ts";
+
+const callbacks: Record<string, (e?: any) => void> = {};
+const api: any = {};
+for (const event of ["TouchStart", "TouchMove", "TouchEnd", "TouchCancel", "Hide"]) api[`on${event}`] = (fn: any) => { callbacks[event] = fn; };
+const input = new Input(), dispatched: string[] = [], activated: string[] = [];
+const game = { input, online: false, screen: "play", audio: { unlock() {}, stopCharge() {} }, togglePause() { this.screen = "pause"; } };
+const ui = { mode: "play", blocksTable: false, cancel() {}, activate(id: string) { activated.push(id); },
+  hit(x: number) { return x < 80 ? { id: "charge", hold: "charge", disabled: false } : x < 160 ? { id: "settings", disabled: false } : x < 240 ? { id: "disabled", disabled: true } : undefined; } };
+bindTouches(game as unknown as Game, ui as unknown as MiniUi, api, type => dispatched.push(type), {});
+const touch = (name: string, x: number, id = 1) => callbacks[name]!({ changedTouches: [{ identifier: id, clientX: x, clientY: 10 }] });
+touch("TouchStart", 20); assert.ok(input.chargeHeld && input.chargePressed);
+touch("TouchStart", 20, 2); touch("TouchEnd", 20, 2);
+assert.ok(input.chargeHeld, "a second finger must not release the first finger's charge");
+touch("TouchEnd", 20); assert.ok(!input.chargeHeld); assert.equal(dispatched.length, 0);
+input.reset(); input.endFrame();
+touch("TouchStart", 20); touch("TouchMove", 290);
+assert.ok(input.cancelled && !input.chargeHeld, "sliding outside charge cancels instead of shooting");
+touch("TouchEnd", 290); input.endFrame();
+touch("TouchStart", 300); touch("TouchMove", 330); touch("TouchEnd", 330);
+assert.deepEqual(dispatched, ["pointerdown", "pointermove", "pointerup"]);
+assert.ok(!input.chargeHeld, "table aiming never starts charge");
+touch("TouchStart", 100); touch("TouchEnd", 100); assert.deepEqual(activated, ["settings"]);
+touch("TouchStart", 180); touch("TouchEnd", 180); assert.equal(activated.length, 1, "disabled UI must consume taps");
+ui.blocksTable = true; touch("TouchStart", 300); touch("TouchEnd", 300); assert.equal(dispatched.length, 3);
+touch("TouchStart", 20); touch("TouchCancel", 20); assert.ok(input.cancelled && !input.chargeHeld);
+touch("TouchStart", 20); ui.mode = "over"; touch("TouchEnd", 20); assert.ok(input.cancelled && !input.chargeHeld);
+ui.mode = "play"; touch("TouchStart", 20); callbacks.Hide!(); assert.equal(game.screen, "pause"); assert.ok(!input.chargeHeld);
+game.online = true; game.screen = "play"; callbacks.Hide!(); assert.equal(game.screen, "play", "online lifecycle must keep transport active");
+console.log("PASS mini-game charge ownership, table aim, overlay blocking, slide/cancel, stale touch and background pause");

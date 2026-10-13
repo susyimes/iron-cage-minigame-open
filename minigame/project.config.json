@@ -1,0 +1,46 @@
+{
+  "description": "暴走台球 · 娱乐八球、单人练习与同房联机",
+  "appid": "",
+  "compileType": "game",
+  "projectname": "iron-cage-minigame",
+  "setting": {
+    "es6": false,
+    "enhance": false,
+    "postcss": false,
+    "minified": false,
+    "urlCheck": true,
+    "ignoreUploadUnusedFiles": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    },
+    "compileWorklet": false,
+    "uglifyFileName": false,
+    "uploadWithSourceMap": true,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false
+  },
+  "packOptions": {
+    "ignore": [
+      {
+        "value": "node_modules",
+        "type": "folder"
+      },
+      {
+        "value": "README.md",
+        "type": "file"
+      }
+    ],
+    "include": []
+  },
+  "simulatorPluginLibVersion": {},
+  "isGameTourist": true,
+  "editorSetting": {}
+}
